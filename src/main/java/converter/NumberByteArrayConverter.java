@@ -5,6 +5,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * Class for converting multiple numbers (tuple) to byte array and back.
+ * 
+ * Usage: First, use addTupleEntry() to define upper bounds for each number in
+ * your tuple.
+ * 
+ * Next: Use toByteArray() to convert your tuple to byte array. Use
+ * toNumberArray() to convert back.
+ * 
+ * This file originates from:
+ * https://github.com/LukeOwncloud/NumberByteArrayConverter
+ * 
+ * Make sure your copy is up-to-date!
+ */
 public class NumberByteArrayConverter {
 
 	private final static Logger LOGGER = Logger
