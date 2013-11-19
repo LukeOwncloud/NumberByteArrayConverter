@@ -149,12 +149,26 @@ public class NumberByteArrayConverter {
 		return resultArray;
 	}
 
+	public List<BigInteger> toNumberArray(long byteArrayAsLong) {
+		BigInteger result = new BigInteger(String.valueOf(byteArrayAsLong));
+		return toNumberArray(result);
+	}
+
+	public List<BigInteger> toNumberArray(BigInteger byteArrayAsBigInteger) {
+		return toNumberArray(byteArrayAsBigInteger.toByteArray());
+	}
+
 	public List<BigInteger> toNumberArray(byte[] byteArray) {
 		LOGGER.fine("toNumberArray()");
 
 		List<BigInteger> output = new ArrayList<>(tuple.size());
 
 		LOGGER.finest("toNumberArray(): Input as hex: " + bytesToHex(byteArray));
+
+		if (byteArray.length == 0) {
+			LOGGER.warning("toNumberArray(): obtained byte array is empty.");
+			return null;
+		}
 
 		// check if first bit is 1. in this case byteArray would be converted to
 		// negative number. to avoid that, add 0-byte
@@ -237,7 +251,7 @@ public class NumberByteArrayConverter {
 	 *            byte[] to be returned as string
 	 * @return hexadecimal string
 	 */
-	private static String bytesToHex(byte[] bytes) {
+	public static String bytesToHex(byte[] bytes) {
 		char[] hexChars = new char[bytes.length * 2];
 		int v;
 		for (int j = 0; j < bytes.length; j++) {
