@@ -3,8 +3,12 @@ package converter;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class NumberByteArrayConverter {
+
+	private final static Logger LOGGER = Logger
+			.getLogger(NumberByteArrayConverter.class.getName());
 
 	/**
 	 * Items of tuple identified by upperBound.
@@ -14,7 +18,7 @@ public class NumberByteArrayConverter {
 	BigInteger currentMax;
 
 	/**
-	 * Add an item for tuple.
+	 * Add an item for tuple by specifying its upper bound.
 	 * 
 	 * @param upperBound
 	 *            Upper bound for tuple item. I.e. items for for tuple item must
@@ -27,10 +31,37 @@ public class NumberByteArrayConverter {
 			result = result.multiply(item);
 		}
 		result = result.subtract(new BigInteger("1"));
-		System.out.println("Current max: " + result);
+		LOGGER.finest("addTupleEntry(): Current max: " + result);
 		currentMax = result;
 	}
 
+	/**
+	 * Add an item for tuple by specifying its upper bound.
+	 * 
+	 * @param upperBound
+	 *            Upper bound for tuple item. I.e. items for for tuple item must
+	 *            be smaller than upperBound.
+	 */
+	public void addTupleEntry(String upperBound) {
+		addTupleEntry(new BigInteger(upperBound));
+	}
+
+	/**
+	 * Add an item for tuple by specifying its upper bound.
+	 * 
+	 * @param upperBound
+	 *            Upper bound for tuple item. I.e. items for for tuple item must
+	 *            be smaller than upperBound.
+	 */
+	public void addTupleEntry(int upperBound) {
+		addTupleEntry(String.valueOf(upperBound));
+	}
+
+	/**
+	 * 
+	 * @param n
+	 * @return
+	 */
 	public static int log2(long n) {
 		if (n <= 0)
 			throw new IllegalArgumentException();
@@ -38,22 +69,20 @@ public class NumberByteArrayConverter {
 
 	}
 
+	/**
+	 * Returns the number of bits required to store an instance of current
+	 * tuple.
+	 * 
+	 * @return number of bits for current tuple
+	 */
 	public int getSizeInBits() {
 		int l = currentMax.bitLength();
 		if (l % 8 != 0) {
-			System.out.println("Note: When storing a tuple of this type to a "
+			LOGGER.fine("Note: When storing a tuple of this type to a "
 					+ ((l / 8) + 1) + "-byte Array " + (8 - (l % 8))
 					+ " bits are unsed.");
 		}
 		return l;
-	}
-
-	public void addTupleEntry(String max) {
-		addTupleEntry(new BigInteger(max));
-	}
-
-	public void addTupleEntry(int max) {
-		addTupleEntry(String.valueOf(max));
 	}
 
 	public byte[] toByteArray(String[] pos) {
@@ -70,11 +99,19 @@ public class NumberByteArrayConverter {
 	}
 
 	public byte[] toByteArray(BigInteger[] items) {
+		LOGGER.fine("toByteArray()");
+
 		if (!checkSize(items))
 			return null;
 
 		if (!checkItems(items))
 			return null;
+
+		String log = "";
+		for (BigInteger item : items) {
+			log += item + ", ";
+		}
+		LOGGER.fine("toByteArray(): Input: " + log);
 
 		BigInteger result = new BigInteger("0");
 		BigInteger factor = new BigInteger("1");
@@ -83,7 +120,6 @@ public class NumberByteArrayConverter {
 			result = result.add(multiplieditem);
 			factor = factor.multiply(tuple.get(i));
 		}
-		// System.out.println("result: " + result);
 		byte[] resultArray = result.toByteArray();
 		// drop most-significant byte if it is 0. this happens because
 		// BigInteger supports negative numbers.
@@ -91,15 +127,20 @@ public class NumberByteArrayConverter {
 			byte[] tmp = new byte[resultArray.length - 1];
 			System.arraycopy(resultArray, 1, tmp, 0, tmp.length);
 			resultArray = tmp;
-			// System.out.println("dropped MSB which is 0-byte");
+			LOGGER.finer("toByteArray(): dropped MSB which is 0-byte");
 		}
-		// System.out.println("as hex: " + bytesToHex(resultArray));
-		// System.out.println("length of byte array: " + resultArray.length);
+		LOGGER.fine("toByteArray(): output as hex: " + bytesToHex(resultArray));
+		LOGGER.finest("toByteArray(): length of output in bytes: "
+				+ resultArray.length);
 		return resultArray;
 	}
 
 	public List<BigInteger> toNumberArray(byte[] byteArray) {
+		LOGGER.fine("toNumberArray()");
+
 		List<BigInteger> output = new ArrayList<>(tuple.size());
+
+		LOGGER.finest("toNumberArray(): Input as hex: " + bytesToHex(byteArray));
 
 		// check if first bit is 1. in this case byteArray would be converted to
 		// negative number. to avoid that, add 0-byte
@@ -108,11 +149,11 @@ public class NumberByteArrayConverter {
 			byte[] tmp = new byte[byteArray.length + 1];
 			System.arraycopy(byteArray, 0, tmp, 1, byteArray.length);
 			byteArray = tmp;
-			System.out.println("add 0-byte as MSB");
+			LOGGER.finer("toNumberArray(): added 0-byte as MSB");
 		}
 		BigInteger input = new BigInteger(byteArray);
 
-		System.out.println("Input: " + input);
+		LOGGER.fine("toNumberArray(): Input: " + input);
 		BigInteger factor = new BigInteger("1");
 
 		for (int i = 0; i < tuple.size(); i++) {
@@ -122,10 +163,11 @@ public class NumberByteArrayConverter {
 			output.add(item);
 		}
 
+		String log = "";
 		for (BigInteger item : output) {
-			System.out.print(item + ", ");
+			log += item + ", ";
 		}
-		System.out.println("");
+		LOGGER.fine("toNumberArray(): Output: " + log);
 		return output;
 	}
 
@@ -139,7 +181,7 @@ public class NumberByteArrayConverter {
 	private boolean checkSize(BigInteger[] items) {
 		boolean result = items.length == tuple.size();
 		if (!result)
-			System.out.println("Size of items != size of tuple");
+			LOGGER.warning("checkSize(): Size of items != size of tuple");
 		return result;
 	}
 
@@ -154,14 +196,14 @@ public class NumberByteArrayConverter {
 	private boolean checkItems(BigInteger[] items) {
 		for (int i = 0; i < items.length; i++) {
 			if (items[i].compareTo(tuple.get(i)) >= 0) {
-				System.out.println("Entry " + i
+				LOGGER.warning("checkItems(): Entry " + i
 						+ " to big. Must be smaller than; " + tuple.get(i)
 						+ " is: " + items[i]);
 				return false;
 			}
 			if (items[i].compareTo(new BigInteger("0")) < 0) {
-				System.out
-						.println("Entry " + i + " must be greater or equal 0");
+				LOGGER.warning("checkItems(): Entry " + i
+						+ " must be greater or equal 0");
 				return false;
 			}
 
@@ -169,8 +211,18 @@ public class NumberByteArrayConverter {
 		return true;
 	}
 
+	/**
+	 * Helper for bytesToHex()
+	 */
 	final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
 
+	/**
+	 * Converts a byte[] to an hexadecimal string.
+	 * 
+	 * @param bytes
+	 *            byte[] to be returned as string
+	 * @return hexadecimal string
+	 */
 	private static String bytesToHex(byte[] bytes) {
 		char[] hexChars = new char[bytes.length * 2];
 		int v;
