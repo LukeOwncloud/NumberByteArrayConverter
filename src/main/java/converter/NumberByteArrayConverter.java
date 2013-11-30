@@ -99,19 +99,14 @@ public class NumberByteArrayConverter {
 		return l;
 	}
 
-	public byte[] toByteArray(String[] pos) {
-		BigInteger[] array = new BigInteger[pos.length];
-		int i = 0;
-		for (String string : pos) {
-			array[i++] = new BigInteger(string);
-		}
-		return toByteArray(array);
-	}
-
-	public byte[] toByteArray(List<BigInteger> pos) {
-		return toByteArray(pos.toArray(new BigInteger[pos.size()]));
-	}
-
+	/**
+	 * Converts an instance of current tuple to a byte array. Returned byte
+	 * array can be converted back by toNumberArray(...) functions.
+	 * 
+	 * @param items
+	 *            instance of current tuple as single BigInteger
+	 * @return byte array of passed instance of current tuple
+	 */
 	public byte[] toByteArray(BigInteger[] items) {
 		LOGGER.fine("toByteArray()");
 
@@ -149,15 +144,82 @@ public class NumberByteArrayConverter {
 		return resultArray;
 	}
 
+	/**
+	 * Converts an instance of current tuple to a byte array. Returned byte
+	 * array can be converted back by toNumberArray(...) functions.
+	 * 
+	 * @param items
+	 *            instance of current tuple
+	 * @return byte array of passed instance of current tuple
+	 */
+	public byte[] toByteArray(List<BigInteger> items) {
+		return toByteArray(items.toArray(new BigInteger[items.size()]));
+	}
+
+	/**
+	 * Converts an instance of current tuple to a byte array. Returned byte
+	 * array can be converted back by toNumberArray(...) functions.
+	 * 
+	 * @param items
+	 *            instance of current tuple as String array
+	 * @return byte array of passed instance of current tuple
+	 */
+	public byte[] toByteArray(String[] items) {
+		BigInteger[] array = new BigInteger[items.length];
+		int i = 0;
+		for (String item : items) {
+			array[i++] = new BigInteger(item);
+		}
+		return toByteArray(array);
+	}
+
+	/**
+	 * Converts an instance of current tuple to a byte array. Returned byte
+	 * array can be converted back by toNumberArray(...) functions.
+	 * 
+	 * @param items
+	 *            instance of current tuple as String list
+	 * @return byte array of passed instance of current tuple
+	 */
+	public byte[] toByteArrayAsStringList(List<String> items) {
+		String[] stringArray = items.toArray(new String[items.size()]);
+		return toByteArray(stringArray);
+	}
+
+	/**
+	 * Interprets passed byteArrayAsLong as instance of current tuple and
+	 * returns the corresponding elements for this tuple as List of BigInteger.
+	 * 
+	 * @param byteArrayAsLong
+	 *            long value to be interpreted as instance of current tuple
+	 * @return corresponding elements for this tuple as list of BigInteger
+	 */
 	public List<BigInteger> toNumberArray(long byteArrayAsLong) {
 		BigInteger result = new BigInteger(String.valueOf(byteArrayAsLong));
 		return toNumberArray(result);
 	}
 
+	/**
+	 * Interprets passed byteArrayAsBigInteger as instance of current tuple and
+	 * returns the corresponding elements for this tuple as List of BigInteger.
+	 * 
+	 * @param byteArrayAsBigInteger
+	 *            BigInteger value to be interpreted as instance of current
+	 *            tuple
+	 * @return corresponding elements for this tuple as list of BigInteger
+	 */
 	public List<BigInteger> toNumberArray(BigInteger byteArrayAsBigInteger) {
 		return toNumberArray(byteArrayAsBigInteger.toByteArray());
 	}
 
+	/**
+	 * Interprets passed byteArray as instance of current tuple and returns the
+	 * corresponding elements for this tuple as List of BigInteger.
+	 * 
+	 * @param byteArray
+	 *            byteArray to be interpreted as instance of current tuple
+	 * @return corresponding elements for this tuple as list of BigInteger
+	 */
 	public List<BigInteger> toNumberArray(byte[] byteArray) {
 		LOGGER.fine("toNumberArray()");
 
@@ -225,7 +287,7 @@ public class NumberByteArrayConverter {
 		for (int i = 0; i < items.length; i++) {
 			if (items[i].compareTo(tuple.get(i)) >= 0) {
 				LOGGER.warning("checkItems(): Entry " + i
-						+ " to big. Must be smaller than; " + tuple.get(i)
+						+ " too big. Must be smaller than; " + tuple.get(i)
 						+ " is: " + items[i]);
 				return false;
 			}
@@ -245,7 +307,7 @@ public class NumberByteArrayConverter {
 	final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
 
 	/**
-	 * Converts a byte[] to an hexadecimal string.
+	 * Converts a byte[] to an hexadecimal string. Helper function.
 	 * 
 	 * @param bytes
 	 *            byte[] to be returned as string
